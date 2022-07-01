@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Tasks\NameSpacePath;
+namespace NameSpacePathStub;
 
-class ClassName
+class ClassNameStub
 {
     public function __construct()
     {

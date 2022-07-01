@@ -2,16 +2,14 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-
-class MakeTask extends MakeFileStructure
+class FileStructureCommand extends MakeFileStructure
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'make:task {path}';
+    protected $signature = 'make:file-struct-command {path}';
 
     /**
      * The console command description.
@@ -28,9 +26,9 @@ class MakeTask extends MakeFileStructure
     public function __construct()
     {
         parent::__construct();
-        $this->setNameSpace('App/Tasks');
-        $this->setSuffix('Task');
-        $this->setStubPath('stubs/task.stub');
+        $this->setNameSpace('App/Console/Commands');
+        $this->setSuffix('');
+        $this->setStubPath('stubs/file-struct-command.stub');
         $this->setExtension('.php');
         $this->setFolderPermissions(0755);
     }

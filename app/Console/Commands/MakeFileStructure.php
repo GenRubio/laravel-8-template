@@ -16,41 +16,32 @@ class MakeFileStructure extends Command
     private $fullPath;
     private $fullName;
     private $pathDirectories;
+    private $multiFiles = null;
+    private $replaceWordsFunction = "replaceWords_";
     protected $signature = 'command';
     protected $description = 'Command description';
 
-    /**
-     * Method that change the keywords in the stub files, for the ones given
-     *
-     * @param string $file
-     * @return string
-     */
-    public function replaceWords(string $file)
+    public function handle()
     {
-        return "";
+        if ($this->multiFiles) {
+            foreach ($this->multiFiles as $key => $config) {
+                $this->setMultiFileAttributes($config);
+                $this->start($key);
+            }
+        } else {
+            $this->start();
+        }
     }
 
-    /**
-     * Logic
-     */
-    public function handle()
+    private function start($key = null)
     {
         $this->setAttributes();
         $this->setPathDirectories();
 
         if ($this->validateTaskName()) {
             $this->makeDirectories();
-            $this->makeFile();
+            $this->makeFile($key);
         }
-    }
-
-    private function setAttributes()
-    {
-        $basicPath = $this->namespace . $this->argument('path');
-        $this->path = $this->argument('path') . $this->suffix;
-        $this->fullPath = $basicPath . $this->suffix . $this->extension;
-        $this->fileName = explode("/", $basicPath)[count(explode("/", $basicPath)) - 1] . $this->suffix;
-        $this->fullName = explode("/", $this->fullPath)[count(explode("/", $this->fullPath)) - 1];
     }
 
     /*
@@ -59,9 +50,15 @@ class MakeFileStructure extends Command
     |--------------------------------------------------------------------------
     */
 
-    private function makeFile()
+    private function makeFile($key)
     {
-        $file = $this->replaceWords(file_get_contents($this->stubPath));
+        if ($key) {
+            $function = "{$this->replaceWordsFunction}{$key}";
+            $file = $this->$function(file_get_contents($this->stubPath));
+        } else {
+            $function = "{$this->replaceWordsFunction}0";
+            $file = $this->$function(file_get_contents($this->stubPath));
+        }
         $this->saveFile($file);
     }
 
@@ -87,11 +84,43 @@ class MakeFileStructure extends Command
         return true;
     }
 
+    private function makeNameSpacePath($path)
+    {
+        if (str_contains($path, '/')) {
+            $namespaceFormat = $this->namespace . '/';
+            $folders = explode("/", $path);
+            for ($i = 0; $i < count($folders) - 1; $i++) {
+                $namespaceFormat .= $folders[$i] . '/';
+            }
+            return rtrim($namespaceFormat, "/");
+        } else {
+            return $this->namespace;
+        }
+    }
+
     /*
     |--------------------------------------------------------------------------
     | MUTATORS
     |--------------------------------------------------------------------------
     */
+
+    private function setAttributes()
+    {
+        $basicPath = $this->namespace . '/' . $this->argument('path');
+        $this->path = $this->makeNameSpacePath($this->argument('path') . $this->suffix);
+        $this->fullPath = $basicPath . $this->suffix . $this->extension;
+        $this->fileName = explode("/", $basicPath)[count(explode("/", $basicPath)) - 1] . $this->suffix;
+        $this->fullName = explode("/", $this->fullPath)[count(explode("/", $this->fullPath)) - 1];
+    }
+
+    private function setMultiFileAttributes($config)
+    {
+        $this->setNameSpace($config['name_space']);
+        $this->setSuffix($config['suffix']);
+        $this->setStubPath($config['stub_path']);
+        $this->setExtension($config['extension']);
+        $this->setFolderPermissions($config['folder_permissions']);
+    }
 
     private function setPathDirectories()
     {
@@ -126,6 +155,11 @@ class MakeFileStructure extends Command
     protected function setFolderPermissions($value)
     {
         $this->folderPermissions = $value;
+    }
+
+    protected function setMultiFiles($value)
+    {
+        $this->multiFiles = $value;
     }
 
     /*
