@@ -9,7 +9,7 @@ class MakeViewHandlerController extends MakeFileStructure
      *
      * @var string
      */
-    protected $signature = 'make:view-handler-controller {path}';
+    protected $signature = 'view:handler {path}';
 
     /**
      * The console command description.
